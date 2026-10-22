@@ -1,4 +1,4 @@
-\# Wazuh Agents and Detection
+# Wazuh Agents and Detection
 
 
 
@@ -14,15 +14,15 @@ The server hosts:
 
 
 
-\- Wazuh Manager
+- Wazuh Manager
 
-\- Wazuh Indexer
+- Wazuh Indexer
 
-\- Wazuh Dashboard
+- Wazuh Dashboard
 
 
 
-\## Agents
+## Agents
 
 
 
@@ -44,13 +44,13 @@ Wazuh agent communication uses:
 
 
 
-\- TCP `1514` for event communication
+- TCP `1514` for event communication
 
-\- TCP `1515` for enrollment
+- TCP `1515` for enrollment
 
 
 
-\## SSH Detection Scenario
+## SSH Detection Scenario
 
 
 
@@ -78,15 +78,15 @@ Wazuh detected:
 
 
 
-\- failed password attempts
+- failed password attempts
 
-\- invalid usernames
+- invalid usernames
 
-\- source IP address
+- source IP address
 
-\- target system
+- target system
 
-\- SSH authentication activity
+- SSH authentication activity
 
 
 
@@ -94,13 +94,13 @@ One of the observed Wazuh rules was:
 
 
 
-\- Rule ID: `5710`
+- Rule ID: `5710`
 
-\- Description: `sshd: Attempt to login using a non-existent user`
+- Description: `sshd: Attempt to login using a non-existent user`
 
 
 
-\## Suricata Integration
+## Suricata Integration
 
 
 
@@ -112,7 +112,7 @@ Custom rule `100101` identifies Suricata alerts and integrates network IDS event
 
 
 
-\## Validation
+## Validation
 
 
 

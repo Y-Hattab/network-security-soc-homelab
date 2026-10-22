@@ -1,4 +1,4 @@
-\# WireGuard VPN Setup
+# WireGuard VPN Setup
 
 
 
@@ -6,7 +6,7 @@ WireGuard is configured on pfSense to provide secure remote access to management
 
 
 
-\## VPN Addressing
+## VPN Addressing
 
 
 
@@ -34,7 +34,7 @@ VPN client:
 
 
 
-\## Client Routing
+## Client Routing
 
 
 
@@ -42,11 +42,11 @@ The WireGuard client routes the following networks through the VPN:
 
 
 
-\- `10.30.30.0/24`
+- `10.30.30.0/24`
 
-\- `10.40.40.0/24`
+- `10.40.40.0/24`
 
-\- `10.50.50.0/24`
+- `10.50.50.0/24`
 
 
 
@@ -54,7 +54,7 @@ This allows access to ADMIN, SERVERS and the VPN network through the encrypted t
 
 
 
-\## Peer Configuration
+## Peer Configuration
 
 
 
@@ -70,7 +70,7 @@ The private keys are never stored in this repository.
 
 
 
-\## Firewall Policy
+## Firewall Policy
 
 
 
@@ -82,17 +82,17 @@ Examples:
 
 
 
-\- VPN → ADMIN-PC TCP `22`
+- VPN → ADMIN-PC TCP `22`
 
-\- VPN → Wazuh TCP `443`
+- VPN → Wazuh TCP `443`
 
-\- VPN → Wazuh TCP `1514-1515`
+- VPN → Wazuh TCP `1514-1515`
 
-\- ICMP for diagnostic testing
+- ICMP for diagnostic testing
 
 
 
-\## Validation
+## Validation
 
 
 
@@ -108,9 +108,9 @@ A successful configuration displayed:
 
 
 
-\- a recent handshake
+- a recent handshake
 
-\- transferred and received traffic
+- transferred and received traffic
 
 
 
@@ -118,7 +118,7 @@ Remote SSH access to ADMIN-PC was also successfully tested through WireGuard.
 
 
 
-\## Security Model
+## Security Model
 
 
 
@@ -126,9 +126,9 @@ Without the VPN:
 
 
 
-\- USERS cannot directly access ADMIN
+- USERS cannot directly access ADMIN
 
-\- USERS cannot directly access Wazuh management services
+- USERS cannot directly access Wazuh management services
 
 
 
@@ -136,7 +136,7 @@ With the VPN:
 
 
 
-\- explicitly authorized ADMIN and Wazuh services become accessible
+- explicitly authorized ADMIN and Wazuh services become accessible
 
 
 

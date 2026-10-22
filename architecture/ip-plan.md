@@ -1,4 +1,4 @@
-\# IP Addressing Plan
+# IP Addressing Plan
 
 
 
@@ -24,57 +24,57 @@ This lab is divided into multiple security zones connected through pfSense.
 
 
 
-\## VMware Networks
+## VMware Networks
 
 
 
-\- VMnet8: WAN / NAT
+- VMnet8: WAN / NAT
 
-\- VMnet2: DMZ
+- VMnet2: DMZ
 
-\- VMnet3: USERS
+- VMnet3: USERS
 
-\- VMnet4: ADMIN
+- VMnet4: ADMIN
 
-\- VMnet5: SERVERS
-
-
-
-\## pfSense Interfaces
+- VMnet5: SERVERS
 
 
 
-\- WAN → VMware NAT
-
-\- DMZ → `10.10.10.1/24`
-
-\- USERS → `10.20.20.1/24`
-
-\- ADMIN → `10.30.30.1/24`
-
-\- SERVERS → `10.40.40.1/24`
-
-\- WireGuard → `10.50.50.1/24`
+## pfSense Interfaces
 
 
 
-\## INTERNAL\_NETWORKS Alias
+- WAN → VMware NAT
+
+- DMZ → `10.10.10.1/24`
+
+- USERS → `10.20.20.1/24`
+
+- ADMIN → `10.30.30.1/24`
+
+- SERVERS → `10.40.40.1/24`
+
+- WireGuard → `10.50.50.1/24`
 
 
 
-The pfSense alias `INTERNAL\_NETWORKS` contains:
+## INTERNAL_NETWORKS Alias
 
 
 
-\- `10.10.10.0/24`
+The pfSense alias `INTERNAL_NETWORKS` contains:
 
-\- `10.20.20.0/24`
 
-\- `10.30.30.0/24`
 
-\- `10.40.40.0/24`
+- `10.10.10.0/24`
 
-\- `10.50.50.0/24`
+- `10.20.20.0/24`
+
+- `10.30.30.0/24`
+
+- `10.40.40.0/24`
+
+- `10.50.50.0/24`
 
 
 

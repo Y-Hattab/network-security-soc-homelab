@@ -1,4 +1,4 @@
-\# Suricata IDS Analysis
+# Suricata IDS Analysis
 
 
 
@@ -10,7 +10,7 @@ It monitors traffic originating from the USERS network.
 
 
 
-\## Rule Sources
+## Rule Sources
 
 
 
@@ -18,7 +18,7 @@ ET Open rules were enabled to detect suspicious and known network activity.
 
 
 
-\## Detection Test
+## Detection Test
 
 
 
@@ -54,7 +54,7 @@ This validated that Suricata was correctly inspecting the traffic and matching I
 
 
 
-\## Wazuh Integration
+## Wazuh Integration
 
 
 
@@ -70,11 +70,11 @@ A local Wazuh rule was also created:
 
 
 
-\- Rule ID: `100101`
+- Rule ID: `100101`
 
-\- Level: `7`
+- Level: `7`
 
-\- Description: `Suricata IDS alert detected`
+- Description: `Suricata IDS alert detected`
 
 
 
@@ -82,11 +82,11 @@ The rule matches Suricata events where:
 
 
 
-`event\\\\\\\_type = alert`
+`event\\\\\\_type = alert`
 
 
 
-\## Detection Pipeline
+## Detection Pipeline
 
 
 
@@ -94,7 +94,7 @@ The rule matches Suricata events where:
 
 
 
-\## Validation
+## Validation
 
 
 

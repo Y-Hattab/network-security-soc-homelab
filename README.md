@@ -1,498 +1,358 @@
-# \# Network Security \& SOC Homelab
+# Network Security & SOC Homelab
 
-# 
+Hands-on cybersecurity homelab focused on network segmentation, firewall hardening, centralized monitoring, intrusion detection and secure remote administration.
 
-# Hands-on cybersecurity homelab focused on network segmentation, firewall hardening, centralized monitoring, intrusion detection and secure remote administration.
+## Project Overview
 
-# 
+The objective of this project was to build a realistic segmented network environment using pfSense and several Linux virtual machines.
 
-# \## Project Overview
+The lab implements:
 
-# 
+- Network segmentation with pfSense
+- DMZ, USERS, ADMIN and SERVERS security zones
+- Wazuh SIEM/XDR monitoring
+- Suricata IDS with ET Open rules
+- Suricata alert forwarding to Wazuh
+- WireGuard VPN
+- Firewall hardening and least-privilege access
+- Security testing with SSH and Nmap
 
-# The objective of this project was to build a realistic segmented network environment using pfSense and several Linux virtual machines.
+## Network Architecture
 
-# 
+| Zone | Network | Main Host |
+|---|---|---|
+| DMZ | `10.10.10.0/24` | DMZ-WEB `10.10.10.10` |
+| USERS | `10.20.20.0/24` | USER-PC-01 `10.20.20.10` |
+| ADMIN | `10.30.30.0/24` | ADMIN-PC-01 `10.30.30.10` |
+| SERVERS | `10.40.40.0/24` | SOC-WAZUH-01 `10.40.40.10` |
+| VPN | `10.50.50.0/24` | pfSense `10.50.50.1`, VPN client `10.50.50.2` |
 
-# The lab implements:
+pfSense acts as the central router and firewall between all network zones.
 
-# 
+## Main Components
 
-# \- Network segmentation with pfSense
+### pfSense
 
-# \- DMZ, USERS, ADMIN and SERVERS security zones
+pfSense provides:
 
-# \- Wazuh SIEM/XDR monitoring
+- Routing between the different network zones
+- Stateful firewalling
+- NAT
+- Network segmentation
+- WireGuard VPN
+- Suricata IDS integration
 
-# \- Suricata IDS with ET Open rules
+Firewall policies follow a least-privilege approach.
 
-# \- Suricata alert forwarding to Wazuh
+### DMZ-WEB
 
-# \- WireGuard VPN
+`DMZ-WEB` is an Ubuntu web server located in the DMZ.
 
-# \- Firewall hardening and least-privilege access
+Main services:
 
-# \- Security testing with SSH and Nmap
+- Nginx
+- OpenSSH
+- Wazuh agent
 
-# 
+The DMZ is isolated from sensitive internal management networks.
 
-# \## Network Architecture
+### USER-PC-01
 
-# 
+`USER-PC-01` represents a standard workstation.
 
-# | Zone | Network | Main Host |
+It is used to:
 
-# |---|---|---|
+- Access the DMZ web application
+- Generate security test traffic
+- Perform SSH authentication tests
+- Run Nmap scans
+- Establish the WireGuard VPN tunnel
 
-# | DMZ | `10.10.10.0/24` | DMZ-WEB `10.10.10.10` |
+### ADMIN-PC-01
 
-# | USERS | `10.20.20.0/24` | USER-PC-01 `10.20.20.10` |
+`ADMIN-PC-01` is the dedicated administration workstation.
 
-# | ADMIN | `10.30.30.0/24` | ADMIN-PC-01 `10.30.30.10` |
+It is used for authorized access to:
 
-# | SERVERS | `10.40.40.0/24` | SOC-WAZUH-01 `10.40.40.10` |
+- pfSense WebGUI
+- Wazuh Dashboard
+- SOC-WAZUH server through SSH
 
-# | VPN | `10.50.50.0/24` | pfSense `10.50.50.1`, Client `10.50.50.2` |
+### SOC-WAZUH-01
 
-# 
+`SOC-WAZUH-01` hosts the security monitoring platform.
 
-# pfSense acts as the central router and firewall between all network zones.
+It includes:
 
-# 
+- Wazuh Manager
+- Wazuh Indexer
+- Wazuh Dashboard
 
-# \## Main Components
+## Wazuh SIEM
 
-# 
+Wazuh agents were deployed on monitored Linux endpoints.
 
-# \### pfSense
+The SIEM centralizes security events including:
 
-# 
+- SSH authentication failures
+- Invalid user login attempts
+- Endpoint security events
+- Suricata IDS alerts
 
-# pfSense provides:
+The monitored endpoints are:
 
-# 
+- DMZ-WEB
+- USER-PC-01
 
-# \- Inter-VLAN/network routing
+![Wazuh Agents](docs/screenshots/wazuh-agents.png)
 
-# \- Stateful firewalling
+## SSH Attack Detection
 
-# \- NAT
+Repeated invalid SSH authentication attempts were generated from `USER-PC-01` against `DMZ-WEB`.
 
-# \- Traffic segmentation
+Wazuh successfully detected:
 
-# \- WireGuard VPN
+- Failed password attempts
+- Authentication attempts using a non-existent user
+- Source IP address
+- Target host
+- MITRE ATT&CK related techniques
 
-# \- Suricata IDS integration
+![Wazuh SSH Detection](docs/screenshots/wazuh-ssh-detection.png)
 
-# 
+## Suricata IDS
 
-# Firewall policies follow a least-privilege approach.
+Suricata was deployed on pfSense to inspect traffic from the USERS network.
 
-# 
+ET Open signatures were enabled.
 
-# \### Wazuh
+An Nmap scan generated a real IDS alert:
 
-# 
+`ET SCAN Possible Nmap User-Agent Observed`
 
-# Wazuh is deployed on `SOC-WAZUH-01`.
+The alert identified:
 
-# 
+- Source: `10.20.20.10`
+- Destination: `10.10.10.10`
+- Destination port: `80`
+- Traffic classification: Web Application Attack
 
-# It provides:
+![Suricata IDS](docs/screenshots/suricata-ids.png)
 
-# 
+## Suricata and Wazuh Integration
 
-# \- Centralized log collection
+Suricata events are forwarded from pfSense to Wazuh using syslog.
 
-# \- Endpoint monitoring
+A custom Wazuh decoder was configured to identify Suricata EVE JSON events.
 
-# \- SSH authentication monitoring
+A local Wazuh rule was created:
 
-# \- Security event analysis
+`Rule ID: 100101`
 
-# \- Suricata alert correlation
+The rule detects Suricata events where:
 
-# 
+`event_type = alert`
 
-# Two Linux endpoints were enrolled as Wazuh agents:
+Detection pipeline:
 
-# 
+`Network Traffic → Suricata → Syslog → Wazuh Decoder → Rule 100101 → SIEM Alert`
 
-# \- DMZ-WEB
+![Suricata Wazuh Integration](docs/screenshots/suricata-wazuh.png)
 
-# \- USER-PC-01
+## WireGuard VPN
 
-# 
+WireGuard provides secure remote administration.
 
-# !\[Wazuh Agents](docs/screenshots/wazuh-agents.png)
+VPN network:
 
-# 
+`10.50.50.0/24`
 
-# \## SSH Attack Detection
+Example addressing:
 
-# 
+- pfSense WireGuard interface: `10.50.50.1`
+- VPN client: `10.50.50.2`
 
-# Repeated invalid SSH authentication attempts were generated against the DMZ web server.
+Without the VPN, the USERS network cannot directly access ADMIN or the Wazuh management interface.
 
-# 
+After establishing the WireGuard tunnel, only explicitly authorized resources become reachable.
 
-# Wazuh successfully detected:
+Example authorized access:
 
-# 
+- VPN → ADMIN-PC SSH
+- VPN → Wazuh HTTPS
+- VPN → Wazuh agent communication
 
-# \- Failed password attempts
+![WireGuard VPN](docs/screenshots/wireguard-vpn.png)
 
-# \- Invalid users
+## Network Segmentation
 
-# \- Source IP address
+The final firewall policy separates the environment into dedicated security zones.
 
-# \- MITRE ATT\&CK related techniques
+### USERS
 
-# 
+Allowed:
 
-# !\[Wazuh SSH Detection](docs/screenshots/wazuh-ssh-detection.png)
+- HTTP access to the DMZ web server
+- Wazuh agent communication
+- DNS
+- HTTP/HTTPS Internet access
+- WireGuard tunnel establishment
 
-# 
+Blocked:
 
-# \## Suricata IDS
+- Direct ADMIN access
+- Direct Wazuh management access
+- Unauthorized internal network access
 
-# 
+![User to DMZ Access](docs/screenshots/user-to-dmz-access.png)
 
-# Suricata was deployed on pfSense to inspect network traffic.
+### DMZ
 
-# 
+Allowed:
 
-# ET Open signatures were enabled.
+- Wazuh agent communication
+- DNS
+- NTP
+- HTTP/HTTPS Internet access
 
-# 
+Blocked:
 
-# An Nmap scan generated the following real IDS alert:
+- ADMIN network
+- Wazuh Dashboard
+- Internal management interfaces
+- Unauthorized internal network access
 
-# 
+![DMZ Isolation](docs/screenshots/dmz-isolation.png)
 
-# `ET SCAN Possible Nmap User-Agent Observed`
+### ADMIN
 
-# 
+The ADMIN network is the dedicated management zone.
 
-# !\[Suricata IDS](docs/screenshots/suricata-ids.png)
+ADMIN-PC can access:
 
-# 
+- pfSense WebGUI
+- Wazuh Dashboard
+- SOC-WAZUH through SSH
 
-# \## Suricata and Wazuh Integration
+![Administrative Access](docs/screenshots/admin-access.png)
 
-# 
+### SERVERS
 
-# Suricata events are forwarded from pfSense to Wazuh using syslog.
+The SERVERS network is isolated from other internal networks by default.
 
-# 
+Allowed:
 
-# A custom Wazuh decoder identifies Suricata EVE JSON events.
+- DNS
+- NTP
+- HTTP/HTTPS Internet access
+- Required management traffic
 
-# 
+Blocked:
 
-# Local Wazuh rule `100101` detects Suricata events where:
+- Unauthorized traffic toward USERS, DMZ and other internal networks
 
-# 
+![Servers Isolation](docs/screenshots/servers-isolation.png)
 
-# `event\_type = alert`
+## Firewall Hardening
 
-# 
+The final firewall policy follows this general model:
 
-# Detection pipeline:
+1. Explicitly allow required internal communication
+2. Block access to other internal networks
+3. Allow only necessary Internet services
+4. Restrict management access to ADMIN and WireGuard
+5. Remove temporary and overly permissive rules
 
-# 
+An `INTERNAL_NETWORKS` alias contains:
 
-# `Network Traffic → Suricata → Syslog → Wazuh → SIEM Alert`
+- `10.10.10.0/24`
+- `10.20.20.0/24`
+- `10.30.30.0/24`
+- `10.40.40.0/24`
+- `10.50.50.0/24`
 
-# 
+This alias is used to simplify segmentation policies.
 
-# !\[Suricata Wazuh Integration](docs/screenshots/suricata-wazuh.png)
+## Security Validation
 
-# 
+Final validation included:
 
-# \## WireGuard VPN
+| Test | Result |
+|---|---|
+| USERS → DMZ HTTP | Allowed |
+| USERS → ADMIN without VPN | Blocked |
+| USERS → Wazuh Dashboard without VPN | Blocked |
+| USERS → Wazuh Agent ports | Allowed |
+| DMZ → ADMIN | Blocked |
+| DMZ → Wazuh Dashboard | Blocked |
+| DMZ → Wazuh Agent ports | Allowed |
+| ADMIN → pfSense WebGUI | Allowed |
+| ADMIN → Wazuh Dashboard | Allowed |
+| ADMIN → Wazuh SSH | Allowed |
+| SERVERS → USERS | Blocked |
+| SERVERS → Internet HTTPS | Allowed |
+| WireGuard → ADMIN-PC SSH | Allowed |
+| WireGuard → Wazuh HTTPS | Allowed |
+| SSH attack → Wazuh alert | Detected |
+| Nmap traffic → Suricata alert | Detected |
+| Suricata alert → Wazuh | Detected |
 
-# 
+## Technologies
 
-# WireGuard provides secure remote access to management resources.
+- VMware Workstation
+- pfSense
+- Ubuntu Server 24.04 LTS
+- Ubuntu Desktop
+- Wazuh
+- Suricata
+- ET Open Rules
+- WireGuard
+- Nginx
+- Nmap
+- SSH
+- Syslog
+- Git
+- GitHub
 
-# 
+## Skills Demonstrated
 
-# VPN network:
+- Network architecture
+- Network segmentation
+- Firewall rule design
+- Least-privilege access control
+- DMZ implementation
+- Routing and NAT
+- Linux administration
+- SIEM deployment
+- IDS monitoring
+- Log analysis
+- Security event correlation
+- VPN deployment
+- Network troubleshooting
+- Security testing
+- Security hardening
+- Technical documentation
 
-# 
+## Project Limitations
 
-# `10.50.50.0/24`
+Due to hardware resource limitations, Greenbone/OpenVAS was removed from the final version of the lab.
 
-# 
+Suricata was implemented in IDS mode only.
 
-# Example:
+IPS mode is considered a future improvement after proper signature tuning and false-positive evaluation.
 
-# 
+## Future Improvements
 
-# \- pfSense WireGuard interface: `10.50.50.1`
+Possible future extensions include:
 
-# \- VPN client: `10.50.50.2`
+- Suricata IPS mode
+- Dedicated vulnerability scanner
+- Additional attack and detection scenarios
+- Infrastructure automation
+- Centralized monitoring and metrics
+- Dedicated remote VPN client outside the lab
+- Windows Active Directory security lab as a separate project
 
-# 
+## Disclaimer
 
-# Without the VPN, the USERS network cannot directly access ADMIN or the Wazuh management interface.
-
-# 
-
-# After establishing the WireGuard tunnel, explicitly authorized resources become reachable.
-
-# 
-
-# !\[WireGuard VPN](docs/screenshots/wireguard-vpn.png)
-
-# 
-
-# \## Network Segmentation
-
-# 
-
-# The final firewall policy separates the environment into dedicated security zones.
-
-# 
-
-# \### USERS
-
-# 
-
-# Allowed:
-
-# 
-
-# \- HTTP access to DMZ web server
-
-# \- Wazuh agent communication
-
-# \- DNS
-
-# \- HTTP/HTTPS Internet access
-
-# 
-
-# Blocked:
-
-# 
-
-# \- Direct ADMIN access
-
-# \- Direct SERVERS management access
-
-# 
-
-# !\[User to DMZ](docs/screenshots/user-to-dmz-access.png)
-
-# 
-
-# \### DMZ
-
-# 
-
-# Allowed:
-
-# 
-
-# \- Wazuh agent communication
-
-# \- DNS
-
-# \- NTP
-
-# \- HTTP/HTTPS Internet access
-
-# 
-
-# Blocked:
-
-# 
-
-# \- ADMIN network
-
-# \- Wazuh Dashboard
-
-# \- Internal management interfaces
-
-# 
-
-# !\[DMZ Isolation](docs/screenshots/dmz-isolation.png)
-
-# 
-
-# \### ADMIN
-
-# 
-
-# ADMIN-PC is the dedicated management workstation.
-
-# 
-
-# It can access:
-
-# 
-
-# \- pfSense WebGUI
-
-# \- Wazuh Dashboard
-
-# \- Wazuh server through SSH
-
-# 
-
-# !\[Administrative Access](docs/screenshots/admin-access.png)
-
-# 
-
-# \### SERVERS
-
-# 
-
-# The SERVERS network is isolated from other internal networks by default.
-
-# 
-
-# Only explicitly required outbound traffic is permitted.
-
-# 
-
-# !\[Servers Isolation](docs/screenshots/servers-isolation.png)
-
-# 
-
-# \## Security Validation
-
-# 
-
-# Final validation included:
-
-# 
-
-# | Test | Result |
-
-# |---|---|
-
-# | USERS → DMZ HTTP | Allowed |
-
-# | USERS → ADMIN without VPN | Blocked |
-
-# | USERS → Wazuh Dashboard without VPN | Blocked |
-
-# | DMZ → ADMIN | Blocked |
-
-# | DMZ → Wazuh Dashboard | Blocked |
-
-# | ADMIN → pfSense | Allowed |
-
-# | ADMIN → Wazuh Dashboard | Allowed |
-
-# | ADMIN → Wazuh SSH | Allowed |
-
-# | SERVERS → USERS | Blocked |
-
-# | WireGuard → ADMIN-PC SSH | Allowed |
-
-# | WireGuard → Wazuh HTTPS | Allowed |
-
-# | SSH attack → Wazuh alert | Detected |
-
-# | Nmap traffic → Suricata alert | Detected |
-
-# | Suricata alert → Wazuh | Detected |
-
-# 
-
-# \## Technologies
-
-# 
-
-# \- VMware Workstation
-
-# \- pfSense
-
-# \- Ubuntu Server 24.04 LTS
-
-# \- Ubuntu Desktop
-
-# \- Wazuh
-
-# \- Suricata
-
-# \- ET Open Rules
-
-# \- WireGuard
-
-# \- Nginx
-
-# \- Nmap
-
-# \- SSH
-
-# \- Syslog
-
-# 
-
-# \## Skills Demonstrated
-
-# 
-
-# \- Network architecture
-
-# \- Network segmentation
-
-# \- Firewall rule design
-
-# \- Least-privilege access control
-
-# \- DMZ implementation
-
-# \- Routing and NAT
-
-# \- Linux administration
-
-# \- SIEM deployment
-
-# \- IDS monitoring
-
-# \- Log analysis
-
-# \- Security event correlation
-
-# \- VPN deployment
-
-# \- Network troubleshooting
-
-# \- Security validation
-
-# 
-
-# \## Future Improvements
-
-# 
-
-# Possible future improvements:
-
-# 
-
-# \- Suricata IPS mode after signature tuning
-
-# \- Dedicated vulnerability scanner
-
-# \- Automated infrastructure deployment
-
-# \- Additional attack scenarios
-
-# \- Centralized metrics and monitoring
-
-# \- Windows Active Directory security lab as a separate project
-
-# 
-
-# \## Disclaimer
-
-# 
-
-# This project was built in an isolated academic homelab for educational and defensive cybersecurity purposes.
-
+This project was created in an isolated academic homelab for educational and defensive cybersecurity purposes.
